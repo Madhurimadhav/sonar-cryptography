@@ -6,10 +6,14 @@ import com.ibm.engine.detection.IDetectionEngine;
 import com.ibm.engine.detection.IType;
 import com.ibm.engine.detection.MatchContext;
 import com.ibm.engine.detection.MethodMatcher;
+import com.ibm.engine.detection.MethodDetection;
+import com.ibm.engine.rule.DetectionRule;
+import com.ibm.engine.rule.MethodDetectionRule;
 import com.ibm.engine.rule.Parameter;
 import com.ibm.engine.detection.ResolvedValue;
 import com.ibm.engine.detection.TraceSymbol;
 import com.ibm.engine.executive.DetectionExecutive;
+import com.ibm.engine.language.ILanguageTranslation;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -29,10 +33,38 @@ public class CxxDetectionEngine implements IDetectionEngine<Object, Object> {
     }
 
     @Override
-    public void run(@Nonnull Object tree) {}
+    public void run(@Nonnull Object tree) {
+        run(TraceSymbol.createStart(), tree);
+    }
 
     @Override
-    public void run(@Nonnull TraceSymbol<Object> traceSymbol, @Nonnull Object tree) {}
+    public void run(@Nonnull TraceSymbol<Object> traceSymbol, @Nonnull Object tree) {
+        if (!(tree instanceof String code)) {
+            return;
+        }
+        MatchContext matchContext = MatchContext.build(false, detectionStore.getDetectionRule());
+        ILanguageTranslation<Object> translation = handler.getLanguageSupport().translation();
+        java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("([a-zA-Z0-9_]+)\\s*\\(").matcher(code);
+        while (matcher.find()) {
+            String call = matcher.group();
+            if (detectionStore.getDetectionRule().match(call, translation)) {
+                analyseExpression(call);
+            }
+        }
+    }
+
+    private void analyseExpression(@Nonnull String expression) {
+        if (detectionStore.getDetectionRule().is(MethodDetectionRule.class)) {
+            MethodDetection<Object> methodDetection = new MethodDetection<>(expression, null);
+            detectionStore.onReceivingNewDetection(methodDetection);
+            return;
+        }
+
+        if (detectionStore.getDetectionRule() instanceof DetectionRule<?> detectionRule && detectionRule.actionFactory() != null) {
+            MethodDetection<Object> methodDetection = new MethodDetection<>(expression, null);
+            detectionStore.onReceivingNewDetection(methodDetection);
+        }
+    }
 
     @Override
     public @Nullable Object extractArgumentFromMethodCaller(
