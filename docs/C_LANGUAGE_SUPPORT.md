@@ -33,3 +33,6 @@ mvn clean package
 2. Build SonarCXX as described above and copy the plugin JAR to the SonarQube `extensions/plugins` directory.
 3. Build this repository and copy the resulting `sonar-cryptography-plugin` JAR to the same directory.
 4. Start SonarQube and verify that both plugins appear in **Administration → Marketplace → Installed**.
+## Current limitations
+
+The C and C++ support in this plugin is experimental. A minimal translation layer and detection engine exist but only search for WolfSSL function names such as `wc_AesCbcEncrypt` in the source text. This allows the WolfCrypt detection rules in `c/src/main/java/com/ibm/plugin/rules/detection/wolfcrypt` to trigger on simple cases. Complex C code may still be missed and further integration with a real parser is required for reliable CBOM generation.
