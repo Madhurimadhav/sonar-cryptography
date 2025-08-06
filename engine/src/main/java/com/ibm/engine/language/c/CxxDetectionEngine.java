@@ -3,24 +3,24 @@ package com.ibm.engine.language.c;
 import com.ibm.engine.detection.DetectionStore;
 import com.ibm.engine.detection.Handler;
 import com.ibm.engine.detection.IDetectionEngine;
-import com.ibm.engine.detection.MatchContext;
 
 import com.ibm.engine.detection.MethodDetection;
+import com.ibm.engine.detection.ResolvedValue;
+import com.ibm.engine.detection.TraceSymbol;
+import com.ibm.engine.executive.DetectionExecutive;
+import com.ibm.engine.language.ILanguageTranslation;
 import com.ibm.engine.rule.DetectionRule;
 import com.ibm.engine.rule.MethodDetectionRule;
 import com.ibm.engine.rule.Parameter;
-import com.ibm.engine.detection.ResolvedValue;
-import com.ibm.engine.detection.TraceSymbol;
-
-
-import com.ibm.engine.executive.DetectionExecutive;
-import com.ibm.engine.language.ILanguageTranslation;
+import com.sonar.sslr.api.AstNode;
+import java.io.StringReader;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.sonar.cxx.parser.CxxParser;
 
 public class CxxDetectionEngine implements IDetectionEngine<Object, Object> {
     private final DetectionStore<Object, Object, Object, Object> detectionStore;
@@ -40,29 +40,39 @@ public class CxxDetectionEngine implements IDetectionEngine<Object, Object> {
 
     @Override
     public void run(@Nonnull TraceSymbol<Object> traceSymbol, @Nonnull Object tree) {
-        if (!(tree instanceof String code)) {
-            return;
+        AstNode root = null;
+        if (tree instanceof AstNode ast) {
+            root = ast;
+        } else if (tree instanceof String code) {
+            root = (AstNode) CxxParser.createParser().parse(new StringReader(code));
         }
-        MatchContext matchContext = MatchContext.build(false, detectionStore.getDetectionRule());
-        ILanguageTranslation<Object> translation = handler.getLanguageSupport().translation();
-        if (detectionStore.getDetectionRule().is(MethodDetectionRule.class)) {
-            java.util.regex.Matcher matcher =
-                    java.util.regex.Pattern.compile("([a-zA-Z0-9_]+)\\s*\\(").matcher(code);
-            while (matcher.find()) {
-                String call = matcher.group();
-                if (detectionStore.getDetectionRule().match(call, translation)) {
-                    analyseExpression(call);
-                }
-            }
+        if (root == null) {
             return;
         }
 
-        if (detectionStore.getDetectionRule().match(code, translation)) {
-            analyseExpression(code);
+        ILanguageTranslation<Object> translation = handler.getLanguageSupport().translation();
+
+        if (detectionStore.getDetectionRule().is(MethodDetectionRule.class)) {
+            traverseCallNodes(root, translation);
+            return;
+        }
+
+        if (detectionStore.getDetectionRule().match(root, translation)) {
+            analyseExpression(root);
         }
     }
 
-    private void analyseExpression(@Nonnull String expression) {
+    private void traverseCallNodes(@Nonnull AstNode node, @Nonnull ILanguageTranslation<Object> translation) {
+        String typeName = node.getType() != null ? node.getType().toString().toLowerCase() : "";
+        if (typeName.contains("call") && detectionStore.getDetectionRule().match(node, translation)) {
+            analyseExpression(node);
+        }
+        for (AstNode child : node.getChildren()) {
+            traverseCallNodes(child, translation);
+        }
+    }
+
+    private void analyseExpression(@Nonnull Object expression) {
         if (detectionStore.getDetectionRule().is(MethodDetectionRule.class)) {
             MethodDetection<Object> methodDetection = new MethodDetection<>(expression, null);
             detectionStore.onReceivingNewDetection(methodDetection);

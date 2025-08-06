@@ -3,6 +3,8 @@ package com.ibm.engine.language.c;
 import com.ibm.engine.detection.IType;
 import com.ibm.engine.detection.MatchContext;
 import com.ibm.engine.language.ILanguageTranslation;
+import com.sonar.sslr.api.AstNode;
+import com.sonar.sslr.api.Token;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -20,6 +22,15 @@ public class CxxLanguageTranslation implements ILanguageTranslation<Object> {
             Matcher m = CALL_PATTERN.matcher(call);
             if (m.find()) {
                 return Optional.of(m.group(1));
+            }
+        } else if (methodInvocation instanceof AstNode node) {
+            for (AstNode child : node.getChildren()) {
+                Token token = child.getToken();
+                if (token != null
+                        && token.getValue() != null
+                        && token.getValue().matches("[a-zA-Z_][a-zA-Z0-9_]*")) {
+                    return Optional.of(token.getValue());
+                }
             }
         }
         return Optional.empty();
@@ -50,6 +61,11 @@ public class CxxLanguageTranslation implements ILanguageTranslation<Object> {
     public Optional<String> resolveIdentifierAsString(@Nonnull MatchContext matchContext, @Nonnull Object name) {
         if (name instanceof String s) {
             return Optional.of(s);
+        } else if (name instanceof AstNode node) {
+            Token token = node.getToken();
+            if (token != null && token.getValue() != null) {
+                return Optional.of(token.getValue());
+            }
         }
         return Optional.empty();
     }
