@@ -3,16 +3,17 @@ package com.ibm.engine.language.c;
 import com.ibm.engine.detection.DetectionStore;
 import com.ibm.engine.detection.Handler;
 import com.ibm.engine.detection.IDetectionEngine;
-import com.ibm.engine.detection.IType;
 import com.ibm.engine.detection.MatchContext;
-import com.ibm.engine.detection.MethodMatcher;
+
 import com.ibm.engine.detection.MethodDetection;
 import com.ibm.engine.rule.DetectionRule;
 import com.ibm.engine.rule.MethodDetectionRule;
 import com.ibm.engine.rule.Parameter;
 import com.ibm.engine.detection.ResolvedValue;
 import com.ibm.engine.detection.TraceSymbol;
+
 import com.ibm.engine.executive.DetectionExecutive;
+
 import com.ibm.engine.language.ILanguageTranslation;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -44,12 +45,21 @@ public class CxxDetectionEngine implements IDetectionEngine<Object, Object> {
         }
         MatchContext matchContext = MatchContext.build(false, detectionStore.getDetectionRule());
         ILanguageTranslation<Object> translation = handler.getLanguageSupport().translation();
-        java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("([a-zA-Z0-9_]+)\\s*\\(").matcher(code);
-        while (matcher.find()) {
-            String call = matcher.group();
-            if (detectionStore.getDetectionRule().match(call, translation)) {
-                analyseExpression(call);
+        if (detectionStore.getDetectionRule().is(MethodDetectionRule.class)) {
+            java.util.regex.Matcher matcher =
+                    java.util.regex.Pattern.compile("([a-zA-Z0-9_]+)\\s*\\(").matcher(code);
+            while (matcher.find()) {
+                String call = matcher.group();
+                if (detectionStore.getDetectionRule().match(call, translation)) {
+                    analyseExpression(call);
+                }
             }
+            return;
+        }
+
+        if (detectionStore.getDetectionRule().match(code, translation)) {
+            analyseExpression(code);
+
         }
     }
 
