@@ -1,6 +1,9 @@
 package com.ibm.plugin.translation.translator;
 
 import com.ibm.engine.detection.DetectionStore;
+import com.ibm.engine.model.IValue;
+import com.ibm.engine.model.context.IDetectionContext;
+import com.ibm.engine.rule.IBundle;
 import com.ibm.mapper.ITranslator;
 import com.ibm.mapper.model.INode;
 import com.ibm.mapper.model.algorithms.AES;
@@ -13,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import org.sonar.api.batch.fs.InputFile;
+
 
 /**
  * Very small translator that converts action values produced by detection
@@ -51,11 +55,30 @@ public final class CTranslator extends ITranslator<Object, Object, Object, Objec
 
     @Override
     public Optional<INode> translate(
-            @Nonnull com.ibm.engine.rule.IBundle bundle,
-            @Nonnull com.ibm.engine.model.IValue<Object> value,
-            @Nonnull com.ibm.engine.model.context.IDetectionContext detectionValueContext,
+            @Nonnull IBundle bundle,
+            @Nonnull IValue<Object> value,
+            @Nonnull IDetectionContext detectionValueContext,
             @Nonnull String filePath) {
-        return Optional.empty();
+        DetectionLocation detectionLocation =
+                getDetectionContextFrom(value.asString(), bundle, filePath);
+        if (detectionLocation == null) {
+            return Optional.empty();
+        }
+
+        String algorithm = value.asString();
+        return switch (algorithm) {
+            case "AES" -> Optional.of(new AES(detectionLocation));
+            case "SHA-256" -> Optional.of(new SHA2(256, detectionLocation));
+            case "RSA" -> Optional.of(new RSA(detectionLocation));
+            default -> Optional.empty();
+        };
+    }
+
+    @Override
+    @Nullable
+    protected DetectionLocation getDetectionContextFrom(
+            @Nonnull Object location, @Nonnull IBundle bundle, @Nonnull String filePath) {
+        return new DetectionLocation(filePath, 1, 0, List.of(String.valueOf(location)), bundle);
     }
 
     @Override
