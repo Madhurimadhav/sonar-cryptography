@@ -73,16 +73,31 @@ public class CxxDetectionEngine implements IDetectionEngine<Object, Object> {
     }
 
     private void analyseExpression(@Nonnull Object expression) {
+
         if (detectionStore.getDetectionRule().is(MethodDetectionRule.class)) {
-            MethodDetection<Object> methodDetection = new MethodDetection<>(expression, null);
+            MethodDetection<Object> methodDetection = new MethodDetection<>(expression, location);
             detectionStore.onReceivingNewDetection(methodDetection);
             return;
         }
 
         if (detectionStore.getDetectionRule() instanceof DetectionRule<?> detectionRule && detectionRule.actionFactory() != null) {
-            MethodDetection<Object> methodDetection = new MethodDetection<>(expression, null);
+            MethodDetection<Object> methodDetection = new MethodDetection<>(expression, location);
             detectionStore.onReceivingNewDetection(methodDetection);
         }
+    }
+
+    private static int[] getLineColumn(@Nonnull String code, int offset) {
+        int line = 1;
+        int column = 0;
+        for (int i = 0; i < offset; i++) {
+            if (code.charAt(i) == '\n') {
+                line++;
+                column = 0;
+            } else {
+                column++;
+            }
+        }
+        return new int[] {line, column};
     }
 
     @Override
