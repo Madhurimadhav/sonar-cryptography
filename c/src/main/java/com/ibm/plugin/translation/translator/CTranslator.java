@@ -10,11 +10,13 @@ import com.ibm.mapper.model.algorithms.AES;
 import com.ibm.mapper.model.algorithms.RSA;
 import com.ibm.mapper.model.algorithms.SHA2;
 import com.ibm.mapper.utils.DetectionLocation;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.sonar.api.batch.fs.InputFile;
+
 
 /**
  * Very small translator that converts action values produced by detection
@@ -34,14 +36,12 @@ public final class CTranslator extends ITranslator<Object, Object, Object, Objec
         store.getActionValue()
                 .ifPresent(
                         action -> {
-                            String value = action.asString();
                             DetectionLocation loc =
-                                    new DetectionLocation(
-                                            store.getScanContext().getFilePath(),
-                                            1,
-                                            0,
-                                            List.of(value),
-                                            store.getDetectionRule().bundle());
+                                    getDetectionContextFrom(
+                                            store,
+                                            store.getDetectionRule().bundle(),
+                                            store.getScanContext().getFilePath());
+                            String value = action.asString();
                             switch (value) {
                                 case "AES" -> out.add(new AES(loc));
                                 case "SHA-256" -> out.add(new SHA2(256, loc));
@@ -79,5 +79,36 @@ public final class CTranslator extends ITranslator<Object, Object, Object, Objec
     protected DetectionLocation getDetectionContextFrom(
             @Nonnull Object location, @Nonnull IBundle bundle, @Nonnull String filePath) {
         return new DetectionLocation(filePath, 1, 0, List.of(String.valueOf(location)), bundle);
+    }
+
+    @Override
+    protected DetectionLocation getDetectionContextFrom(
+            @Nonnull Object location, @Nonnull com.ibm.engine.rule.IBundle bundle, @Nonnull String filePath) {
+        if (location instanceof DetectionStore<?, ?, ?, ?> store) {
+            String keyword =
+                    store.getActionValue().map(av -> av.asString()).orElse("");
+            int line = 1;
+            int column = 0;
+            try {
+                InputFile inputFile = ((DetectionStore<?, ?, ?, ?>) location).getScanContext().getInputFile();
+                String content = inputFile.contents();
+                int index = keyword.isEmpty() ? -1 : content.indexOf(keyword);
+                if (index >= 0) {
+                    for (int i = 0; i < index; i++) {
+                        if (content.charAt(i) == '\n') {
+                            line++;
+                            column = 0;
+                        } else {
+                            column++;
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                // ignore and keep defaults
+            }
+            List<String> keywords = keyword.isEmpty() ? List.of() : List.of(keyword);
+            return new DetectionLocation(filePath, line, column, keywords, bundle);
+        }
+        return new DetectionLocation(filePath, 1, 0, List.of(), bundle);
     }
 }
