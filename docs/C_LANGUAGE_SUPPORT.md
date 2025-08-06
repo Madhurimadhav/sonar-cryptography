@@ -34,7 +34,4 @@ mvn clean package
 3. Build this repository and copy the resulting `sonar-cryptography-plugin` JAR to the same directory.
 4. Start SonarQube and verify that both plugins appear in **Administration → Marketplace → Installed**.
 ## Current limitations
-
- The C and C++ support in this plugin is experimental. A minimal translation layer and detection engine exist that perform rough text search and simple function call matching for WolfSSL APIs such as `wc_AesCbcEncrypt`. A dedicated `WolfCrypt` rule set is registered through `CDetectionRules`, and detected WolfSSL primitives are translated into CBOM entries when the **Cryptographic Inventory (CBOM)** rule is enabled. Complex C code may still be missed and further integration with a real parser is required for reliable CBOM generation.
-
-When scanning sources that call `wc_AesCbcEncrypt`, the generated `cbom.json` now lists an AES algorithm under the WolfCrypt bundle, showing that WolfSSL assets are recognised.
+The C and C++ support in this plugin is experimental. A minimal translation layer and detection engine exist that perform rough text search and simple function call matching for WolfSSL APIs such as `wc_AesCbcEncrypt`. A dedicated `WolfCrypt` rule set is registered through `CDetectionRules`, and detected WolfSSL primitives are translated into CBOM entries when the **Cryptographic Inventory (CBOM)** rule is enabled. Complex C code may still be missed and further integration with a real parser is required for reliable CBOM generation.
