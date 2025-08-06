@@ -6,19 +6,31 @@ import com.ibm.engine.language.ILanguageTranslation;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 
 public class CxxLanguageTranslation implements ILanguageTranslation<Object> {
+    private static final Pattern CALL_PATTERN = Pattern.compile("([a-zA-Z0-9_]+)\\s*\\(");
+
     @Nonnull
     @Override
     public Optional<String> getMethodName(@Nonnull MatchContext matchContext, @Nonnull Object methodInvocation) {
+        if (methodInvocation instanceof String call) {
+            Matcher m = CALL_PATTERN.matcher(call);
+            if (m.find()) {
+                return Optional.of(m.group(1));
+            }
+        }
         return Optional.empty();
     }
 
     @Nonnull
     @Override
     public Optional<IType> getInvokedObjectTypeString(@Nonnull MatchContext matchContext, @Nonnull Object methodInvocation) {
-        return Optional.empty();
+        return getMethodName(matchContext, methodInvocation)
+                .filter(name -> name.startsWith("wc_"))
+                .map(name -> (IType) (String s) -> s.equals("wolfssl"));
     }
 
     @Nonnull
@@ -36,6 +48,9 @@ public class CxxLanguageTranslation implements ILanguageTranslation<Object> {
     @Nonnull
     @Override
     public Optional<String> resolveIdentifierAsString(@Nonnull MatchContext matchContext, @Nonnull Object name) {
+        if (name instanceof String s) {
+            return Optional.of(s);
+        }
         return Optional.empty();
     }
 
