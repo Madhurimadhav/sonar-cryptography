@@ -51,28 +51,43 @@ public class CxxDetectionEngine implements IDetectionEngine<Object, Object> {
             while (matcher.find()) {
                 String call = matcher.group();
                 if (detectionStore.getDetectionRule().match(call, translation)) {
-                    analyseExpression(call);
+                    int[] location = getLineColumn(code, matcher.start());
+                    analyseExpression(call, location);
                 }
             }
             return;
         }
 
         if (detectionStore.getDetectionRule().match(code, translation)) {
-            analyseExpression(code);
+            analyseExpression(code, new int[] {1, 0});
         }
     }
 
-    private void analyseExpression(@Nonnull String expression) {
+    private void analyseExpression(@Nonnull String expression, @Nonnull int[] location) {
         if (detectionStore.getDetectionRule().is(MethodDetectionRule.class)) {
-            MethodDetection<Object> methodDetection = new MethodDetection<>(expression, null);
+            MethodDetection<Object> methodDetection = new MethodDetection<>(expression, location);
             detectionStore.onReceivingNewDetection(methodDetection);
             return;
         }
 
         if (detectionStore.getDetectionRule() instanceof DetectionRule<?> detectionRule && detectionRule.actionFactory() != null) {
-            MethodDetection<Object> methodDetection = new MethodDetection<>(expression, null);
+            MethodDetection<Object> methodDetection = new MethodDetection<>(expression, location);
             detectionStore.onReceivingNewDetection(methodDetection);
         }
+    }
+
+    private static int[] getLineColumn(@Nonnull String code, int offset) {
+        int line = 1;
+        int column = 0;
+        for (int i = 0; i < offset; i++) {
+            if (code.charAt(i) == '\n') {
+                line++;
+                column = 0;
+            } else {
+                column++;
+            }
+        }
+        return new int[] {line, column};
     }
 
     @Override
