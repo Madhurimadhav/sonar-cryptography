@@ -12,8 +12,8 @@ import com.ibm.engine.rule.Parameter;
 import com.ibm.engine.detection.ResolvedValue;
 import com.ibm.engine.detection.TraceSymbol;
 
-import com.ibm.engine.executive.DetectionExecutive;
 
+import com.ibm.engine.executive.DetectionExecutive;
 import com.ibm.engine.language.ILanguageTranslation;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -59,7 +59,6 @@ public class CxxDetectionEngine implements IDetectionEngine<Object, Object> {
 
         if (detectionStore.getDetectionRule().match(code, translation)) {
             analyseExpression(code);
-
         }
     }
 
