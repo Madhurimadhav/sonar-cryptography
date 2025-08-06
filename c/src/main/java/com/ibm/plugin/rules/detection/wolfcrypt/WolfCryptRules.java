@@ -17,7 +17,7 @@ public final class WolfCryptRules {
             new DetectionRuleBuilder<Object>()
                     .createDetectionRule()
                     .forObjectTypes(LIB_TYPE)
-                    .forMethods("wc_Sha256Final")
+                    .forMethods("wc_Sha256Final", "wc_Sha256Hash")
                     .shouldBeDetectedAs(new ValueActionFactory<>("SHA-256"))
                     .withAnyParameters()
                     .buildForContext(new DigestContext())
@@ -28,7 +28,11 @@ public final class WolfCryptRules {
             new DetectionRuleBuilder<Object>()
                     .createDetectionRule()
                     .forObjectTypes(LIB_TYPE)
-                    .forMethods("wc_AesCbcEncrypt")
+                    .forMethods(
+                            "wc_AesCbcEncrypt",
+                            "wc_AesCbcDecrypt",
+                            "wc_AesEncrypt",
+                            "wc_AesDecrypt")
                     .shouldBeDetectedAs(new ValueActionFactory<>("AES"))
                     .withAnyParameters()
                     .buildForContext(new CipherContext())
@@ -39,7 +43,7 @@ public final class WolfCryptRules {
             new DetectionRuleBuilder<Object>()
                     .createDetectionRule()
                     .forObjectTypes(LIB_TYPE)
-                    .forMethods("wc_RsaPublicEncrypt")
+                    .forMethods("wc_RsaPublicEncrypt", "wc_RsaPrivateDecrypt")
                     .shouldBeDetectedAs(new ValueActionFactory<>("RSA"))
                     .withAnyParameters()
                     .buildForContext(new CipherContext())
