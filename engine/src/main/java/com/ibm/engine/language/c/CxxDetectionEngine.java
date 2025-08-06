@@ -13,14 +13,12 @@ import com.ibm.engine.rule.DetectionRule;
 import com.ibm.engine.rule.MethodDetectionRule;
 import com.ibm.engine.rule.Parameter;
 import com.sonar.sslr.api.AstNode;
-import java.io.StringReader;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.sonar.cxx.parser.CxxParser;
 
 public class CxxDetectionEngine implements IDetectionEngine<Object, Object> {
     private final DetectionStore<Object, Object, Object, Object> detectionStore;
@@ -40,13 +38,7 @@ public class CxxDetectionEngine implements IDetectionEngine<Object, Object> {
 
     @Override
     public void run(@Nonnull TraceSymbol<Object> traceSymbol, @Nonnull Object tree) {
-        AstNode root = null;
-        if (tree instanceof AstNode ast) {
-            root = ast;
-        } else if (tree instanceof String code) {
-            root = (AstNode) CxxParser.createParser().parse(new StringReader(code));
-        }
-        if (root == null) {
+        if (!(tree instanceof AstNode root)) {
             return;
         }
 
@@ -75,29 +67,16 @@ public class CxxDetectionEngine implements IDetectionEngine<Object, Object> {
     private void analyseExpression(@Nonnull Object expression) {
 
         if (detectionStore.getDetectionRule().is(MethodDetectionRule.class)) {
-            MethodDetection<Object> methodDetection = new MethodDetection<>(expression, location);
+            MethodDetection<Object> methodDetection = new MethodDetection<>(expression, null);
             detectionStore.onReceivingNewDetection(methodDetection);
             return;
         }
 
-        if (detectionStore.getDetectionRule() instanceof DetectionRule<?> detectionRule && detectionRule.actionFactory() != null) {
-            MethodDetection<Object> methodDetection = new MethodDetection<>(expression, location);
+        if (detectionStore.getDetectionRule() instanceof DetectionRule<?> detectionRule
+                && detectionRule.actionFactory() != null) {
+            MethodDetection<Object> methodDetection = new MethodDetection<>(expression, null);
             detectionStore.onReceivingNewDetection(methodDetection);
         }
-    }
-
-    private static int[] getLineColumn(@Nonnull String code, int offset) {
-        int line = 1;
-        int column = 0;
-        for (int i = 0; i < offset; i++) {
-            if (code.charAt(i) == '\n') {
-                line++;
-                column = 0;
-            } else {
-                column++;
-            }
-        }
-        return new int[] {line, column};
     }
 
     @Override
