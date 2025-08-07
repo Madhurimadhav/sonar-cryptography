@@ -32,7 +32,11 @@ public final class WolfCryptRules {
                             "wc_AesCbcEncrypt",
                             "wc_AesCbcDecrypt",
                             "wc_AesEncrypt",
-                            "wc_AesDecrypt")
+                            "wc_AesDecrypt",
+                            "wc_AesGcmEncrypt",
+                            "wc_AesGcmDecrypt",
+                            "wc_AesCtrEncrypt",
+                            "wc_AesCtrDecrypt")
                     .shouldBeDetectedAs(new ValueActionFactory<>("AES"))
                     .withAnyParameters()
                     .buildForContext(new CipherContext())
