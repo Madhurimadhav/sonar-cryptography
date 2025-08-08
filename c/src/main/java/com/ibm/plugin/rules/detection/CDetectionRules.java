@@ -1,7 +1,9 @@
 package com.ibm.plugin.rules.detection;
 
 import com.ibm.engine.rule.IDetectionRule;
+import com.ibm.plugin.rules.detection.openssl.OpenSslRules;
 import com.ibm.plugin.rules.detection.wolfcrypt.WolfCryptRules;
+import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
 
@@ -13,6 +15,9 @@ public final class CDetectionRules {
 
     @Nonnull
     public static List<IDetectionRule<Object>> rules() {
-        return WolfCryptRules.rules();
+        List<IDetectionRule<Object>> rules = new ArrayList<>();
+        rules.addAll(WolfCryptRules.rules());
+        rules.addAll(OpenSslRules.rules());
+        return rules;
     }
 }

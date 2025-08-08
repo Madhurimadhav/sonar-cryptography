@@ -40,8 +40,16 @@ public class CxxLanguageTranslation implements ILanguageTranslation<Object> {
     @Override
     public Optional<IType> getInvokedObjectTypeString(@Nonnull MatchContext matchContext, @Nonnull Object methodInvocation) {
         return getMethodName(matchContext, methodInvocation)
-                .filter(name -> name.startsWith("wc_"))
-                .map(name -> (IType) (String s) -> s.equals("wolfssl"));
+                .flatMap(
+                        name -> {
+                            if (name.startsWith("wc_")) {
+                                return Optional.of((IType) (String s) -> s.equals("wolfssl"));
+                            }
+                            if (name.startsWith("AES_")) {
+                                return Optional.of((IType) (String s) -> s.equals("openssl"));
+                            }
+                            return Optional.empty();
+                        });
     }
 
     @Nonnull
