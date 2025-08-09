@@ -21,7 +21,10 @@ package com.ibm.plugin;
 
 import com.ibm.output.cyclondx.CBOMOutputFileFactory;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import javax.annotation.Nonnull;
+import com.ibm.mapper.model.INode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.api.batch.postjob.PostJob;
@@ -45,6 +48,20 @@ public class OutputFileJob implements PostJob {
                         .orElse(Constants.CBOM_OUTPUT_NAME_DEFAULT);
         ScannerManager scannerManager = new ScannerManager(new CBOMOutputFileFactory());
         final File cbom = new File(cbomFilename + ".json");
+
+        List<INode> nodes = new ArrayList<>();
+        nodes.addAll(JavaAggregator.getDetectedNodes());
+        nodes.addAll(PythonAggregator.getDetectedNodes());
+        nodes.addAll(CAggregator.getDetectedNodes());
+        nodes.forEach(
+                node ->
+                        LOGGER.debug(
+                                "Writing ({}) {} to CBOM",
+                                node.getKind().getSimpleName(),
+                                node.asString()));
+        scannerManager.getStatistics().print(LOGGER::debug);
+
+        LOGGER.debug("Saving CBOM to '{}'", cbom.getAbsolutePath());
         scannerManager.getOutputFile().saveTo(cbom);
         LOGGER.info("CBOM was successfully generated '{}'.", cbom.getAbsolutePath());
         scannerManager.getStatistics().print(LOGGER::info);

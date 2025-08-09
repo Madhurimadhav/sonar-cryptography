@@ -23,6 +23,7 @@ import com.ibm.common.IObserver;
 import com.ibm.engine.detection.Finding;
 import com.ibm.engine.executive.DetectionExecutive;
 import com.ibm.engine.language.python.PythonScanContext;
+import com.ibm.engine.utils.DetectionStoreLogger;
 import com.ibm.engine.rule.IDetectionRule;
 import com.ibm.mapper.model.INode;
 import com.ibm.mapper.reorganizer.IReorganizerRule;
@@ -34,6 +35,8 @@ import com.ibm.rules.issue.Issue;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nonnull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.sonar.plugins.python.api.PythonCheck;
 import org.sonar.plugins.python.api.PythonVisitorCheck;
 import org.sonar.plugins.python.api.PythonVisitorContext;
@@ -44,6 +47,9 @@ import org.sonar.plugins.python.api.tree.Tree;
 public abstract class PythonBaseDetectionRule extends PythonVisitorCheck
         implements IObserver<Finding<PythonCheck, Tree, Symbol, PythonVisitorContext>>,
                 IReportableDetectionRule<Tree> {
+
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(PythonBaseDetectionRule.class);
 
     private final boolean isInventory;
     @Nonnull protected final PythonTranslationProcess pythonTranslationProcess;
@@ -89,7 +95,16 @@ public abstract class PythonBaseDetectionRule extends PythonVisitorCheck
      */
     @Override
     public void update(@Nonnull Finding<PythonCheck, Tree, Symbol, PythonVisitorContext> finding) {
+        LOGGER.debug(
+                "Detected finding for {}", this.getClass().getSimpleName());
+        new DetectionStoreLogger<PythonCheck, Tree, Symbol, PythonVisitorContext>()
+                .print(finding.detectionStore());
+
         List<INode> nodes = pythonTranslationProcess.initiate(finding.detectionStore());
+        LOGGER.debug(
+                "Translated finding for {} into {} nodes",
+                this.getClass().getSimpleName(),
+                nodes.size());
         if (isInventory) {
             PythonAggregator.addNodes(nodes);
         }
