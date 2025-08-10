@@ -1,6 +1,7 @@
 package com.ibm.plugin.translation;
 
 import com.ibm.engine.detection.DetectionStore;
+import com.ibm.enricher.Enricher;
 import com.ibm.mapper.ITranslationProcess;
 import com.ibm.mapper.model.INode;
 import com.ibm.mapper.reorganizer.IReorganizerRule;
@@ -22,9 +23,14 @@ public final class CTranslationProcess extends ITranslationProcess<Object, Objec
         CTranslator translator = new CTranslator();
         List<INode> translated = translator.translate(rootDetectionStore);
         Utils.printNodeTree("translated ", translated);
+
         Reorganizer reorganizer = new Reorganizer(reorganizerRules);
         List<INode> reorganized = reorganizer.reorganize(translated);
         Utils.printNodeTree("reorganised", reorganized);
-        return reorganized;
+
+        List<INode> enriched = Enricher.enrich(reorganized).stream().toList();
+        Utils.printNodeTree("enriched   ", enriched);
+
+        return enriched;
     }
 }
