@@ -34,9 +34,14 @@ import org.sonar.plugins.python.api.PythonCheck;
 import org.sonar.plugins.python.api.PythonVisitorContext;
 import org.sonar.plugins.python.api.symbols.Symbol;
 import org.sonar.plugins.python.api.tree.Tree;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import com.ibm.output.Constants;
 
 public final class PythonTranslationProcess
         extends ITranslationProcess<PythonCheck, Tree, Symbol, PythonVisitorContext> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(PythonTranslationProcess.class);
 
     public PythonTranslationProcess(@Nonnull List<IReorganizerRule> reorganizerRules) {
         super(reorganizerRules);
@@ -48,18 +53,31 @@ public final class PythonTranslationProcess
             @Nonnull
                     DetectionStore<PythonCheck, Tree, Symbol, PythonVisitorContext>
                             rootDetectionStore) {
+        LOGGER.debug("{} Starting translation process", Constants.DEBUG_TAG);
         // 1. Translate
         final PythonTranslator pythonTranslator = new PythonTranslator();
         final List<INode> translatedValues = pythonTranslator.translate(rootDetectionStore);
+        LOGGER.debug(
+                "{} Translation produced {} node(s)",
+                Constants.DEBUG_TAG,
+                translatedValues.size());
         Utils.printNodeTree(" translated ", translatedValues);
 
         // 2. Reorganize
         final Reorganizer pythonReorganizer = new Reorganizer(reorganizerRules);
         final List<INode> reorganizedValues = pythonReorganizer.reorganize(translatedValues);
+        LOGGER.debug(
+                "{} Reorganization produced {} node(s)",
+                Constants.DEBUG_TAG,
+                reorganizedValues.size());
         Utils.printNodeTree("reorganised ", reorganizedValues);
 
         // 3. Enrich
         final List<INode> enrichedValues = Enricher.enrich(reorganizedValues).stream().toList();
+        LOGGER.debug(
+                "{} Enrichment produced {} node(s)",
+                Constants.DEBUG_TAG,
+                enrichedValues.size());
         Utils.printNodeTree("  enriched  ", enrichedValues);
 
         return Collections.unmodifiableCollection(enrichedValues).stream().toList();

@@ -34,6 +34,9 @@ import com.ibm.rules.issue.Issue;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nonnull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import com.ibm.output.Constants;
 import org.sonar.plugins.python.api.PythonCheck;
 import org.sonar.plugins.python.api.PythonVisitorCheck;
 import org.sonar.plugins.python.api.PythonVisitorContext;
@@ -48,6 +51,7 @@ public abstract class PythonBaseDetectionRule extends PythonVisitorCheck
     private final boolean isInventory;
     @Nonnull protected final PythonTranslationProcess pythonTranslationProcess;
     @Nonnull protected final List<IDetectionRule<Tree>> detectionRules;
+    private static final Logger LOGGER = LoggerFactory.getLogger(PythonBaseDetectionRule.class);
 
     protected PythonBaseDetectionRule() {
         this.isInventory = false;
@@ -76,6 +80,10 @@ public abstract class PythonBaseDetectionRule extends PythonVisitorCheck
                                                     tree,
                                                     rule,
                                                     new PythonScanContext(this.getContext()));
+                    LOGGER.debug(
+                            "{} Executing detection rule {}",
+                            Constants.DEBUG_TAG,
+                            rule.getClass().getSimpleName());
                     detectionExecutive.subscribe(this);
                     detectionExecutive.start();
                 });
@@ -89,8 +97,13 @@ public abstract class PythonBaseDetectionRule extends PythonVisitorCheck
      */
     @Override
     public void update(@Nonnull Finding<PythonCheck, Tree, Symbol, PythonVisitorContext> finding) {
+        LOGGER.debug("{} Initiating translation of finding", Constants.DEBUG_TAG);
         List<INode> nodes = pythonTranslationProcess.initiate(finding.detectionStore());
+        LOGGER.debug(
+                "{} Translation produced {} node(s)", Constants.DEBUG_TAG, nodes.size());
         if (isInventory) {
+            LOGGER.debug(
+                    "{} Adding {} node(s) to aggregator", Constants.DEBUG_TAG, nodes.size());
             PythonAggregator.addNodes(nodes);
         }
         // report

@@ -45,6 +45,10 @@ public class OutputFileJob implements PostJob {
                         .orElse(Constants.CBOM_OUTPUT_NAME_DEFAULT);
         ScannerManager scannerManager = new ScannerManager(new CBOMOutputFileFactory());
         final File cbom = new File(cbomFilename + ".json");
+        LOGGER.debug(
+                "{} Saving CBOM to {}",
+                com.ibm.output.Constants.DEBUG_TAG,
+                cbom.getAbsolutePath());
         scannerManager.getOutputFile().saveTo(cbom);
         LOGGER.info("CBOM was successfully generated '{}'.", cbom.getAbsolutePath());
         scannerManager.getStatistics().print(LOGGER::info);

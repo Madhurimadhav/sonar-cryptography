@@ -23,6 +23,7 @@ import com.ibm.engine.language.ILanguageSupport;
 import com.ibm.engine.language.LanguageSupporter;
 import com.ibm.mapper.model.INode;
 import com.ibm.output.IAggregator;
+import com.ibm.output.Constants;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -31,12 +32,15 @@ import org.sonar.plugins.python.api.PythonCheck;
 import org.sonar.plugins.python.api.PythonVisitorContext;
 import org.sonar.plugins.python.api.symbols.Symbol;
 import org.sonar.plugins.python.api.tree.Tree;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class PythonAggregator implements IAggregator {
 
     private static ILanguageSupport<PythonCheck, Tree, Symbol, PythonVisitorContext>
             pythonLanguageSupport = LanguageSupporter.pythonLanguageSupporter();
     private static List<INode> detectedNodes = new ArrayList<>();
+    private static final Logger LOGGER = LoggerFactory.getLogger(PythonAggregator.class);
 
     private PythonAggregator() {
         // nothing
@@ -54,6 +58,7 @@ public final class PythonAggregator implements IAggregator {
     }
 
     public static void addNodes(@Nonnull List<INode> newNodes) {
+        LOGGER.debug("{} Accumulating {} node(s)", Constants.DEBUG_TAG, newNodes.size());
         detectedNodes.addAll(newNodes);
         IAggregator.log(newNodes);
     }

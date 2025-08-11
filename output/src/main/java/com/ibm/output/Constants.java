@@ -27,4 +27,7 @@ public final class Constants {
 
     public static final String SCANNER_NAME = "Sonar Cryptography Plugin";
     public static final String SCANNER_VENDOR = "IBM";
+
+    // Tag used to identify debug traces produced by the plugin
+    public static final String DEBUG_TAG = "[CBOM-DEBUG]";
 }
