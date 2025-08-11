@@ -56,7 +56,7 @@ public final class LanguageSupporter {
     @Nonnull
     public static ILanguageSupport<
                     Object,
-                    Object,
+                    com.ibm.engine.language.c.CCallNode,
                     Object,
                     Object>
             cLanguageSupporter() {

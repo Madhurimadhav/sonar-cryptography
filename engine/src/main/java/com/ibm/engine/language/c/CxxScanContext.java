@@ -5,7 +5,7 @@ import java.io.File;
 import javax.annotation.Nonnull;
 import org.sonar.api.batch.fs.InputFile;
 
-public class CxxScanContext implements IScanContext<Object, Object> {
+public class CxxScanContext implements IScanContext<Object, CCallNode> {
     private final InputFile inputFile;
 
     public CxxScanContext(InputFile inputFile) {

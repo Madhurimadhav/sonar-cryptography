@@ -44,8 +44,7 @@ class WolfCryptAESTest {
 
     @Test
     void detectsAesUsageAsAsset() {
-        String code =
-                "void test(){ wc_AesGcmEncrypt(0,0,0,0,0,0,0,0,0); }";
+        String code = "void test(){ wc_AesEncrypt(0,0,0,0); }";
 
         InputFile inputFile =
                 TestInputFileBuilder.create("moduleKey", "test.c")
