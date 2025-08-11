@@ -30,6 +30,8 @@ import com.ibm.plugin.translation.translator.PythonTranslator;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nonnull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.sonar.plugins.python.api.PythonCheck;
 import org.sonar.plugins.python.api.PythonVisitorContext;
 import org.sonar.plugins.python.api.symbols.Symbol;
@@ -37,6 +39,9 @@ import org.sonar.plugins.python.api.tree.Tree;
 
 public final class PythonTranslationProcess
         extends ITranslationProcess<PythonCheck, Tree, Symbol, PythonVisitorContext> {
+
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(PythonTranslationProcess.class);
 
     public PythonTranslationProcess(@Nonnull List<IReorganizerRule> reorganizerRules) {
         super(reorganizerRules);
@@ -48,6 +53,7 @@ public final class PythonTranslationProcess
             @Nonnull
                     DetectionStore<PythonCheck, Tree, Symbol, PythonVisitorContext>
                             rootDetectionStore) {
+        LOGGER.debug("Starting translation of Python detection store");
         // 1. Translate
         final PythonTranslator pythonTranslator = new PythonTranslator();
         final List<INode> translatedValues = pythonTranslator.translate(rootDetectionStore);
@@ -61,7 +67,7 @@ public final class PythonTranslationProcess
         // 3. Enrich
         final List<INode> enrichedValues = Enricher.enrich(reorganizedValues).stream().toList();
         Utils.printNodeTree("  enriched  ", enrichedValues);
-
+        LOGGER.debug("Translation completed with {} enriched nodes", enrichedValues.size());
         return Collections.unmodifiableCollection(enrichedValues).stream().toList();
     }
 }
