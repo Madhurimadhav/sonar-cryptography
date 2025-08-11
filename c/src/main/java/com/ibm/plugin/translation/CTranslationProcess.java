@@ -1,6 +1,7 @@
 package com.ibm.plugin.translation;
 
 import com.ibm.engine.detection.DetectionStore;
+import com.ibm.engine.language.c.CCallNode;
 import com.ibm.enricher.Enricher;
 import com.ibm.mapper.ITranslationProcess;
 import com.ibm.mapper.model.INode;
@@ -11,7 +12,8 @@ import com.ibm.plugin.translation.translator.CTranslator;
 import java.util.List;
 import javax.annotation.Nonnull;
 
-public final class CTranslationProcess extends ITranslationProcess<Object, Object, Object, Object> {
+public final class CTranslationProcess
+        extends ITranslationProcess<Object, CCallNode, Object, Object> {
 
     public CTranslationProcess(@Nonnull List<IReorganizerRule> reorganizerRules) {
         super(reorganizerRules);
@@ -19,7 +21,8 @@ public final class CTranslationProcess extends ITranslationProcess<Object, Objec
 
     @Override
     @Nonnull
-    public List<INode> initiate(@Nonnull DetectionStore<Object, Object, Object, Object> rootDetectionStore) {
+    public List<INode> initiate(
+            @Nonnull DetectionStore<Object, CCallNode, Object, Object> rootDetectionStore) {
         CTranslator translator = new CTranslator();
         List<INode> translated = translator.translate(rootDetectionStore);
         Utils.printNodeTree("translated ", translated);

@@ -16,8 +16,8 @@ import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class CxxLanguageSupport implements ILanguageSupport<Object, Object, Object, Object> {
-    @Nonnull private final Handler<Object, Object, Object, Object> handler;
+public class CxxLanguageSupport implements ILanguageSupport<Object, CCallNode, Object, Object> {
+    @Nonnull private final Handler<Object, CCallNode, Object, Object> handler;
 
     public CxxLanguageSupport() {
         this.handler = new Handler<>(this);
@@ -25,49 +25,49 @@ public class CxxLanguageSupport implements ILanguageSupport<Object, Object, Obje
 
     @Nonnull
     @Override
-    public ILanguageTranslation<Object> translation() {
+    public ILanguageTranslation<CCallNode> translation() {
         return new CxxLanguageTranslation();
     }
 
     @Nonnull
     @Override
-    public DetectionExecutive<Object, Object, Object, Object> createDetectionExecutive(
-            @Nonnull Object tree,
-            @Nonnull IDetectionRule<Object> detectionRule,
-            @Nonnull IScanContext<Object, Object> scanContext) {
+    public DetectionExecutive<Object, CCallNode, Object, Object> createDetectionExecutive(
+            @Nonnull CCallNode tree,
+            @Nonnull IDetectionRule<CCallNode> detectionRule,
+            @Nonnull IScanContext<Object, CCallNode> scanContext) {
         return new DetectionExecutive<>(tree, detectionRule, scanContext, this.handler);
     }
 
     @Nonnull
     @Override
-    public IDetectionEngine<Object, Object> createDetectionEngineInstance(
-            @Nonnull DetectionStore<Object, Object, Object, Object> detectionStore) {
+    public IDetectionEngine<CCallNode, Object> createDetectionEngineInstance(
+            @Nonnull DetectionStore<Object, CCallNode, Object, Object> detectionStore) {
         return new CxxDetectionEngine(detectionStore, this.handler);
     }
 
     @Nonnull
     @Override
-    public IBaseMethodVisitorFactory<Object, Object> getBaseMethodVisitorFactory() {
+    public IBaseMethodVisitorFactory<CCallNode, Object> getBaseMethodVisitorFactory() {
         return (traceSymbol, detectionEngine) ->
                 new CxxBaseMethodVisitor(traceSymbol, detectionEngine);
     }
 
     @Nonnull
     @Override
-    public Optional<Object> getEnclosingMethod(@Nonnull Object expression) {
+    public Optional<CCallNode> getEnclosingMethod(@Nonnull CCallNode expression) {
         return Optional.empty();
     }
 
     @Nullable
     @Override
-    public MethodMatcher<Object> createMethodMatcherBasedOn(@Nonnull Object methodDefinition) {
+    public MethodMatcher<CCallNode> createMethodMatcherBasedOn(@Nonnull CCallNode methodDefinition) {
         return null;
     }
 
     @Nullable
     @Override
-    public EnumMatcher<Object> createSimpleEnumMatcherFor(
-            @Nonnull Object enumIdentifier, @Nonnull MatchContext matchContext) {
+    public EnumMatcher<CCallNode> createSimpleEnumMatcherFor(
+            @Nonnull CCallNode enumIdentifier, @Nonnull MatchContext matchContext) {
         return null;
     }
 }
