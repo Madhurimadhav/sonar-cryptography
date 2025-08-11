@@ -55,12 +55,12 @@ public class CxxDetectionEngine implements IDetectionEngine<Object, Object> {
         }
 
         if (tree instanceof String content) {
-            Pattern callPattern = Pattern.compile("[a-zA-Z0-9_]+\\s*\\([^;]*\\)");
+            Pattern callPattern = Pattern.compile("\\b[a-zA-Z_][a-zA-Z0-9_]*\\s*\\(");
             Matcher matcher = callPattern.matcher(content);
             while (matcher.find()) {
-                String call = matcher.group();
-                if (detectionStore.getDetectionRule().match(call, translation)) {
-                    analyseExpression(call);
+                String callStart = matcher.group();
+                if (detectionStore.getDetectionRule().match(callStart, translation)) {
+                    analyseExpression(callStart);
                 }
             }
         }
