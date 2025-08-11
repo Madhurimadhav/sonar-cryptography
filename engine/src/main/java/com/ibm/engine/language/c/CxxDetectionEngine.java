@@ -17,6 +17,8 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -38,19 +40,29 @@ public class CxxDetectionEngine implements IDetectionEngine<Object, Object> {
 
     @Override
     public void run(@Nonnull TraceSymbol<Object> traceSymbol, @Nonnull Object tree) {
-        if (!(tree instanceof AstNode root)) {
-            return;
-        }
-
         ILanguageTranslation<Object> translation = handler.getLanguageSupport().translation();
 
-        if (detectionStore.getDetectionRule().is(MethodDetectionRule.class)) {
-            traverseCallNodes(root, translation);
+        if (tree instanceof AstNode root) {
+            if (detectionStore.getDetectionRule().is(MethodDetectionRule.class)) {
+                traverseCallNodes(root, translation);
+                return;
+            }
+
+            if (detectionStore.getDetectionRule().match(root, translation)) {
+                analyseExpression(root);
+            }
             return;
         }
 
-        if (detectionStore.getDetectionRule().match(root, translation)) {
-            analyseExpression(root);
+        if (tree instanceof String content) {
+            Pattern callPattern = Pattern.compile("\\b[a-zA-Z_][a-zA-Z0-9_]*\\s*\\(");
+            Matcher matcher = callPattern.matcher(content);
+            while (matcher.find()) {
+                String callStart = matcher.group();
+                if (detectionStore.getDetectionRule().match(callStart, translation)) {
+                    analyseExpression(callStart);
+                }
+            }
         }
     }
 
