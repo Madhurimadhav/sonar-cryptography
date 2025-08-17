@@ -26,6 +26,8 @@ import org.sonar.api.SonarProduct;
 import org.sonar.api.SonarRuntime;
 import com.ibm.plugin.CCheckRegistrar;
 import com.ibm.plugin.CScannerRuleDefinition;
+import com.ibm.crypto.CryptoInventorySensor;
+import com.ibm.crypto.CryptoRulesDefinition;
 
 public class CryptographyPlugin implements Plugin {
 
@@ -55,6 +57,9 @@ public class CryptographyPlugin implements Plugin {
                 //CScannerRuleDefinition.class, // Define Rules
                 CCheckRegistrar.class, // Register C/C++ rules by sonar-cxx sensor
                 // general
-                OutputFileJob.class);
+                OutputFileJob.class,
+                // cbom
+                CryptoRulesDefinition.class,
+                CryptoInventorySensor.class);
     }
 }
