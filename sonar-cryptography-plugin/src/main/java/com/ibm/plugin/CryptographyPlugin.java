@@ -24,10 +24,9 @@ import org.sonar.api.utils.log.Loggers;
 import org.sonar.api.Plugin;
 import org.sonar.api.SonarProduct;
 import org.sonar.api.SonarRuntime;
-import com.ibm.plugin.CCheckRegistrar;
-import com.ibm.plugin.CScannerRuleDefinition;
-import com.ibm.crypto.CryptoInventorySensor;
-import com.ibm.crypto.CryptoRulesDefinition;
+import com.ibm.crypto.cxx.CxxCheckRegistrar;
+import com.ibm.crypto.cxx.CxxCryptoCbomPostJob;
+import com.ibm.crypto.cxx.CxxRulesDefinition;
 
 public class CryptographyPlugin implements Plugin {
 
@@ -54,12 +53,9 @@ public class CryptographyPlugin implements Plugin {
                 PythonScannerRuleDefinition.class, // Define Rules
                 PythonCheckRegistrar.class, // Register Python rules by sonar-python sensor
                 // c/c++
-                //CScannerRuleDefinition.class, // Define Rules
-                CCheckRegistrar.class, // Register C/C++ rules by sonar-cxx sensor
-                // general
-                OutputFileJob.class,
-                // cbom
-                CryptoRulesDefinition.class,
-                CryptoInventorySensor.class);
+                CxxRulesDefinition.class, // Define C/C++ rules
+                CxxCheckRegistrar.class, // Register C/C++ checks
+                CxxCryptoCbomPostJob.class // Emit cbom.json after analysis
+                );
     }
 }

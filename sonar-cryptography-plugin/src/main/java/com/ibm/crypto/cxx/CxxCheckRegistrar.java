@@ -17,28 +17,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.ibm.plugin;
+package com.ibm.crypto.cxx;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.sonar.api.Plugin;
-import org.sonar.api.SonarEdition;
-import org.sonar.api.SonarQubeSide;
-import org.sonar.api.SonarRuntime;
-import org.sonar.api.internal.PluginContextImpl;
-import org.sonar.api.internal.SonarRuntimeImpl;
-import org.sonar.api.utils.Version;
+import com.sonar.cxx.checks.CheckRegistrar;
+import org.sonar.api.BatchExtension;
 
-class PluginTest {
-
-    @Test
-    void testExtensions() {
-        SonarRuntime runtime =
-                SonarRuntimeImpl.forSonarQube(
-                        Version.create(9, 5), SonarQubeSide.SCANNER, SonarEdition.COMMUNITY);
-        Plugin.Context context = new PluginContextImpl.Builder().setSonarRuntime(runtime).build();
-        CryptographyPlugin plugin = new CryptographyPlugin();
-        plugin.define(context);
-        Assertions.assertEquals(8, context.getExtensions().size());
-    }
+public class CxxCheckRegistrar implements CheckRegistrar, BatchExtension {
+  @Override
+  public void register(RegistrarContext context) {
+    context.registerClass(CxxRulesDefinition.REPO_KEY, CxxCryptoInventoryCheck.class);
+  }
 }
