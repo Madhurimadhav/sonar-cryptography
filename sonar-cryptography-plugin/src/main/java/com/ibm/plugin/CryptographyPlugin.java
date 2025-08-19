@@ -24,10 +24,9 @@ import org.sonar.api.utils.log.Loggers;
 import org.sonar.api.Plugin;
 import org.sonar.api.SonarProduct;
 import org.sonar.api.SonarRuntime;
-import com.ibm.crypto.cxx.CxxCheckRegistrar;
-import com.ibm.crypto.cxx.CxxCryptoCbomPostJob;
-import com.ibm.crypto.cxx.CxxRulesDefinition;
-import com.ibm.crypto.cxx.CryptoCxxTapSensor;
+import com.ibm.crypto.CryptoCbomWriter;
+import com.ibm.crypto.CryptoInventoryCollector;
+import com.ibm.crypto.cxx.CxxCryptoHarvestPostJob;
 
 public class CryptographyPlugin implements Plugin {
 
@@ -53,11 +52,11 @@ public class CryptographyPlugin implements Plugin {
                 // python
                 PythonScannerRuleDefinition.class, // Define Rules
                 PythonCheckRegistrar.class, // Register Python rules by sonar-python sensor
-                // c/c++
-                CxxRulesDefinition.class, // Define C/C++ rules
-                CxxCheckRegistrar.class, // Register C/C++ checks
-                CryptoCxxTapSensor.class, // Tap cxx artifacts during scan
-                CxxCryptoCbomPostJob.class // Emit cbom.json after analysis
+                // shared crypto inventory
+                CryptoInventoryCollector.class,
+                CryptoCbomWriter.class,
+                // c/c++ harvesting of scanner report
+                CxxCryptoHarvestPostJob.class
                 );
     }
 }
