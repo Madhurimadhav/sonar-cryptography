@@ -27,6 +27,7 @@ import org.sonar.api.SonarRuntime;
 import com.ibm.crypto.cxx.CxxCheckRegistrar;
 import com.ibm.crypto.cxx.CxxCryptoCbomPostJob;
 import com.ibm.crypto.cxx.CxxRulesDefinition;
+import com.ibm.crypto.cxx.CryptoCxxTapSensor;
 
 public class CryptographyPlugin implements Plugin {
 
@@ -55,6 +56,7 @@ public class CryptographyPlugin implements Plugin {
                 // c/c++
                 CxxRulesDefinition.class, // Define C/C++ rules
                 CxxCheckRegistrar.class, // Register C/C++ checks
+                CryptoCxxTapSensor.class, // Tap cxx artifacts during scan
                 CxxCryptoCbomPostJob.class // Emit cbom.json after analysis
                 );
     }

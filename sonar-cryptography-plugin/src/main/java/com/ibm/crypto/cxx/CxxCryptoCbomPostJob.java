@@ -19,17 +19,17 @@
  */
 package com.ibm.crypto.cxx;
 
-import com.google.gson.Gson;
+import com.ibm.crypto.CbomAsset;
+import com.ibm.crypto.CryptoInventoryWriter;
 import org.sonar.api.batch.PostJob;
 import org.sonar.api.batch.PostJobContext;
 import org.sonar.api.batch.fs.FileSystem;
 import org.sonar.api.utils.log.Logger;
 import org.sonar.api.utils.log.Loggers;
 
-import java.io.IOException;
-import java.nio.file.*;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 public class CxxCryptoCbomPostJob implements PostJob {
 
@@ -45,24 +45,13 @@ public class CxxCryptoCbomPostJob implements PostJob {
       LOG.info("CBOM: no crypto assets detected for C/C++.");
       return;
     }
-    Path out = fs.baseDir().toPath().resolve("cbom.json");
-    Map<String, Object> doc = Map.of(
-        "version", "1.0",
-        "assets", entries.stream().map(e -> Map.of(
-            "file",      e.file,
-            "function",  e.function,
-            "algorithm", e.algorithm,
-            "operation", e.operation,
-            "library",   e.library
-        )).collect(Collectors.toList())
-    );
 
-    try {
-      Files.writeString(out, new Gson().toJson(doc),
-          StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-      LOG.info("CBOM: wrote {}", out.toAbsolutePath());
-    } catch (IOException ex) {
-      LOG.warn("CBOM: failed writing {}", out, ex);
+    List<CbomAsset> assets = new ArrayList<>();
+    for (CxxCryptoInventoryStore.Entry e : entries) {
+      assets.add(new CbomAsset(e.library, e.algorithm, e.operation, e.file, null, e.function));
     }
+
+    CryptoInventoryWriter.writeCbomJson(fs.workDir().toPath(), assets);
+    LOG.info("CBOM: wrote {} assets", assets.size());
   }
 }
